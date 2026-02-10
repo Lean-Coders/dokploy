@@ -6,7 +6,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { admin, apiKey, organization, twoFactor } from "better-auth/plugins";
 import { and, desc, eq } from "drizzle-orm";
-import { IS_CLOUD } from "../constants";
+import { BETTER_AUTH_SECRET, IS_CLOUD } from "../constants";
 import { db } from "../db";
 import * as schema from "../db/schema";
 import { getTrustedOrigins, getUserByToken } from "../services/admin";
@@ -29,6 +29,31 @@ const { handler, api } = betterAuth({
 		"/organization/update",
 		"/organization/delete",
 	],
+	secret: BETTER_AUTH_SECRET,
+	...(!IS_CLOUD
+		? {
+				advanced: {
+					useSecureCookies: false,
+					defaultCookieAttributes: {
+						sameSite: "lax",
+						secure: false,
+						httpOnly: true,
+						path: "/",
+					},
+				},
+			}
+		: {}),
+	...(IS_CLOUD
+		? {
+				account: {
+					accountLinking: {
+						enabled: true,
+						trustedProviders: ["github", "google"],
+						allowDifferentEmails: true,
+					},
+				},
+			}
+		: {}),
 	appName: "Dokploy",
 	socialProviders: {
 		github: {
@@ -56,7 +81,10 @@ const { handler, api } = betterAuth({
 			...(settings?.serverIp ? [`http://${settings?.serverIp}:3000`] : []),
 			...(settings?.host ? [`https://${settings?.host}`] : []),
 			...(process.env.NODE_ENV === "development"
-				? ["http://localhost:3000"]
+				? [
+						"http://localhost:3000",
+						"https://absolutely-handy-falcon.ngrok-free.app",
+					]
 				: []),
 			...trustedOrigins,
 		];
