@@ -52,6 +52,7 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 		api.application.disconnectGitProvider.useMutation();
 
 	const [tab, setSab] = useState<TabState>(application?.sourceType || "github");
+	const bypassGitProviderAccessCheck = true;
 
 	const isLoading =
 		isLoadingGithub || isLoadingGitlab || isLoadingBitbucket || isLoadingGitea;
@@ -100,6 +101,7 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 
 	// Check if user doesn't have access to the current git provider
 	if (
+		!bypassGitProviderAccessCheck &&
 		application &&
 		!application.hasGitProviderAccess &&
 		application.sourceType !== "docker" &&

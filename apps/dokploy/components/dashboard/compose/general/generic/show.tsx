@@ -41,6 +41,7 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 
 	const { data: compose, refetch } = api.compose.one.useQuery({ composeId });
 	const [tab, setSab] = useState<TabState>(compose?.sourceType || "github");
+	const bypassGitProviderAccessCheck = true;
 
 	const isLoading =
 		isLoadingGithub || isLoadingGitlab || isLoadingBitbucket || isLoadingGitea;
@@ -89,6 +90,7 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 
 	// Check if user doesn't have access to the current git provider
 	if (
+		!bypassGitProviderAccessCheck &&
 		compose &&
 		!compose.hasGitProviderAccess &&
 		compose.sourceType !== "raw"
